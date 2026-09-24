@@ -13,7 +13,7 @@
        - Colours               -> :root variables (--ink, --accent, --bg)
        ================================================================ -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <!-- ============ SEO ============ -->
   <title>Arockia Infant Raj M — Software Engineer | MERN &amp; Python Developer</title>
@@ -105,7 +105,12 @@
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
+      text-size-adjust: 100%; -webkit-text-size-adjust: 100%;
     }
+    /* stop the tilted ticker from widening the page on phones */
+    main { overflow-x: clip; }
+    body.menu-open { overflow: hidden; }
 
     img { max-width: 100%; display: block; }
     a { color: inherit; text-decoration: none; }
@@ -206,6 +211,11 @@
     }
     .nav-inner { height: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; }
     .nav-inner::before { content: ""; }
+    .nav-brand {
+      display: none; font-family: var(--font-head); font-weight: 700; font-size: 1.18rem;
+      letter-spacing: -.02em; color: var(--ink); white-space: nowrap;
+    }
+    .nav-brand span { color: var(--accent); }
     .nav-links { display: flex; align-items: center; gap: 2px; }
     .nav-links a {
       position: relative; padding: 9px 14px;
@@ -237,23 +247,42 @@
     .hamburger.open span:nth-child(3) { top: 21px; transform: rotate(-45deg); }
 
     .mobile-menu {
-      position: fixed; top: var(--nav-h); left: 0; right: 0; z-index: 99;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border); box-shadow: var(--shadow-lg);
-      padding: 8px 4vw 22px;
-      display: none;
+      position: fixed; inset: var(--nav-h) 0 0 0; z-index: 99;
+      display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain;
+      background: var(--bg);
+      padding: 10px 6vw calc(28px + env(safe-area-inset-bottom));
+      opacity: 0; visibility: hidden; transform: translateY(-10px);
+      transition: opacity .3s ease, transform .35s var(--ease), visibility .3s ease;
+      counter-reset: mm;
     }
-    .mobile-menu.open { display: block; animation: menuIn .3s var(--ease); }
-    @keyframes menuIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
-    .mobile-menu a {
-      display: block; padding: 14px 6px;
-      font-family: var(--font-head); font-weight: 600; font-size: 1.05rem;
+    .mobile-menu.open { opacity: 1; visibility: visible; transform: none; }
+    .mobile-menu a:not(.btn) {
+      display: flex; align-items: baseline; gap: 16px; padding: 15px 2px;
+      font-family: var(--font-head); font-weight: 700; font-size: 1.55rem; letter-spacing: -.02em;
       color: var(--ink); border-bottom: 1px solid var(--border);
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .4s ease, transform .45s var(--ease), color .2s ease;
     }
-    .mobile-menu a:last-of-type { border-bottom: 0; }
-    .mobile-menu a:hover, .mobile-menu a.active { color: var(--accent); }
-    .mobile-menu .btn { margin-top: 14px; justify-content: center; display: flex; color: #fff; font-size: .95rem; }
+    .mobile-menu a:not(.btn)::before {
+      counter-increment: mm; content: counter(mm, decimal-leading-zero);
+      font-size: .74rem; font-weight: 600; letter-spacing: .08em; color: var(--accent-ink);
+      min-width: 2.4ch; font-variant-numeric: tabular-nums;
+    }
+    .mobile-menu.open a { opacity: 1; transform: none; }
+    .mobile-menu.open a:nth-child(2) { transition-delay: .04s; }
+    .mobile-menu.open a:nth-child(3) { transition-delay: .08s; }
+    .mobile-menu.open a:nth-child(4) { transition-delay: .12s; }
+    .mobile-menu.open a:nth-child(5) { transition-delay: .16s; }
+    .mobile-menu.open a:nth-child(6) { transition-delay: .2s; }
+    .mobile-menu.open a:nth-child(7) { transition-delay: .24s; }
+    .mobile-menu.open a:nth-child(8) { transition-delay: .28s; }
+    .mobile-menu a:not(.btn):active, .mobile-menu a.active { color: var(--accent); }
+    .mobile-menu .btn {
+      margin-top: 26px; justify-content: center; display: flex; flex: none; color: #fff; font-size: 1rem; padding: 17px 24px;
+      opacity: 0; transform: translateY(14px); transition: opacity .4s ease .3s, transform .45s var(--ease) .3s, background .2s ease;
+    }
     .mobile-menu .btn:hover { color: #fff; }
+    body.menu-open .navbar { background: var(--bg); border-bottom-color: var(--border); }
 
     /* ==================================================================
        4. HERO — editorial type + cut-out portrait on white
@@ -721,6 +750,7 @@
       opacity: 0; visibility: hidden; transform: translateY(14px);
       transition: all .3s var(--ease);
     }
+    .to-top { right: max(22px, env(safe-area-inset-right)); bottom: max(22px, env(safe-area-inset-bottom)); }
     .to-top.show { opacity: 1; visibility: visible; transform: none; }
     .to-top:hover { background: var(--accent); transform: translateY(-3px); }
     .to-top svg { width: 20px; height: 20px; }
@@ -794,6 +824,7 @@
       .hamburger { display: inline-flex; align-items: center; justify-content: center; }
       .nav-inner { grid-template-columns: 1fr auto; }
       .nav-inner::before { display: none; }
+      .nav-brand { display: inline-block; }
       .nav-actions { grid-column: 2; }
       .projects-grid, .certs-grid { grid-template-columns: repeat(2, 1fr); }
     }
@@ -823,17 +854,102 @@
       .projects-grid, .certs-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 620px) {
-      .hero { padding-bottom: 64px; }
-      .hero-name { font-size: clamp(2.3rem, 11vw, 3rem); }
-      .hero-ctas .btn { flex: 1 1 100%; justify-content: center; }
-      .stat-card .num { font-size: 2.3rem; }
-      .stats-grid .stat-card { padding: 24px 20px; }
-      .t-card, .contact-form { padding: 24px; }
-      .t-item { padding-left: 38px; }
-      .t-date { margin-left: 0; }
-      .fact-list li { grid-template-columns: 18px 1fr; row-gap: 2px; }
+      :root { --nav-h: 64px; --radius: 16px; }
+      .container { width: calc(100% - 40px); }
+      .section { padding: 68px 0; }
+      .section-head { margin-bottom: 36px; }
+      .section-title { font-size: clamp(1.8rem, 8.4vw, 2.3rem); }
+      .section-lede { font-size: .98rem; }
+
+      /* hero: portrait first, centred copy */
+      .hero { padding: calc(var(--nav-h) + 18px) 0 56px; }
+      .hero-grid { gap: 30px; }
+      .hero-photo { order: -1; max-width: 250px; }
+      .photo-panel { border-radius: 24px; padding-top: 26px; }
+      .photo-dots { top: 14px; left: 14px; width: 70px; height: 56px; }
+      .photo-halo { box-shadow: 0 0 0 10px #fff, 0 0 0 11px color-mix(in srgb, var(--accent) 22%, transparent); }
+      .hero-copy { text-align: center; }
+      .hero-hello { font-size: .8rem; margin-bottom: 10px; }
+      .hero-name { font-size: clamp(2.2rem, 11vw, 3rem); margin-bottom: 20px; }
+      .hero-typed { justify-content: center; margin-bottom: 14px; }
+      .hero-typed .pipe { width: 20px; }
+      .hero-lede { font-size: 1rem; margin: 0 auto 28px; }
+      .hero-ctas { margin-bottom: 26px; }
+      .hero-ctas .btn { flex: 1 1 100%; justify-content: center; padding: 16px 24px; }
+      .hero-socials { justify-content: center; }
+
+      .ticker { padding: 14px 0; }
+      .ticker-track li { font-size: .88rem; gap: 20px; padding: 0 10px; }
+
+      .about-story p { font-size: 1rem; }
+      .fact-list li { grid-template-columns: 18px 1fr; row-gap: 2px; padding: 15px 18px; }
       .fact-list .v { grid-column: 2; }
-      .lb-close { right: 2px; }
+      .stats-grid { margin-top: 40px; }
+      .stats-grid .stat-card { padding: 22px 18px; }
+      .stat-card svg { margin-bottom: 12px; }
+      .stat-card .num { font-size: 2.2rem; }
+      .stat-card .lbl { font-size: .82rem; line-height: 1.4; }
+
+      .skill-row { padding: 22px 0; gap: 14px; }
+      .chips { gap: 8px; }
+      .chip { font-size: .84rem; padding: 6px 12px 6px 6px; }
+
+      .timeline::before { left: 8px; }
+      .t-item { padding-left: 30px; }
+      .t-dot { width: 18px; height: 18px; top: 26px; }
+      .t-dot::after { width: 6px; height: 6px; }
+      .t-card { padding: 22px 20px; }
+      .t-top h3 { font-size: 1.14rem; }
+      .t-date { margin-left: 0; }
+      .t-org { margin-bottom: 12px; }
+      .t-card .bullets li { font-size: .93rem; }
+
+      .projects-grid, .certs-grid { gap: 16px; }
+      .p-card { padding: 22px 20px; }
+      .p-top { margin-bottom: 16px; }
+      .p-links { padding-top: 16px; }
+      .p-link { flex: 1; justify-content: center; }
+
+      .awards-grid { gap: 28px; }
+      .cert-body { padding: 16px 18px; }
+
+      .edu-list { gap: 14px; }
+      .edu-card { display: grid; grid-template-columns: 46px 1fr; gap: 6px 16px; align-items: start; padding: 20px; }
+      .edu-card .t-date { grid-column: 2; justify-self: start; margin: 8px 0 0; }
+
+      .contact-grid { gap: 32px; }
+      .contact-info .section-head { margin-bottom: 26px; }
+      .contact-line { padding: 14px; gap: 14px; }
+      .contact-line .txt { min-width: 0; }
+      .contact-line .txt span { overflow-wrap: anywhere; font-size: .92rem; }
+      .contact-form { padding: 24px 20px; }
+      .field input, .field textarea { font-size: 16px; } /* prevents iOS zoom-on-focus */
+
+      .footer { padding: 44px 0 calc(24px + env(safe-area-inset-bottom)); }
+      .footer-grid { gap: 22px; }
+      .footer-links { gap: 10px 22px; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; }
+
+      .to-top { width: 44px; height: 44px; right: max(16px, env(safe-area-inset-right)); bottom: max(16px, env(safe-area-inset-bottom)); }
+      .lightbox { padding: 16px; }
+      .lb-close { top: -14px; right: 2px; }
+      .toast { bottom: max(20px, env(safe-area-inset-bottom)); max-width: calc(100% - 32px); }
+    }
+    @media (max-width: 380px) {
+      .container { width: calc(100% - 32px); }
+      .hero-name { font-size: 2.05rem; }
+      .stat-card .num { font-size: 1.9rem; }
+      .stats-grid .stat-card { padding: 20px 14px; }
+      .mobile-menu a:not(.btn) { font-size: 1.35rem; padding: 13px 2px; }
+    }
+
+    /* Touch screens: no sticky hover lifts, give tap feedback instead */
+    @media (hover: none) {
+      .p-card:hover, .cert-card:hover, .edu-card:hover, .contact-line:hover,
+      .btn:hover, .chip:hover, .icon-btn:hover, .p-link:hover { transform: none; }
+      .award-item:hover .award-media img, .cert-card:hover .cert-thumb img { transform: none; }
+      .zoom-ic { opacity: 1 !important; transform: none !important; }
+      .btn:active, .p-link:active, .icon-btn:active, .contact-line:active, .chip:active { transform: scale(.97); }
     }
 
     /* ==================================================================
@@ -853,6 +969,7 @@
   <!-- ============================ NAVBAR ============================ -->
   <header class="navbar" id="navbar">
     <div class="container nav-inner">
+      <a class="nav-brand" href="#hero" aria-label="Arockia Infant Raj M — back to top">Infant Raj<span>.</span></a>
       <nav class="nav-links" aria-label="Primary navigation">
         <a href="#about">About</a>
         <a href="#skills">Skills</a>
@@ -1598,6 +1715,7 @@
 
       function closeMenu() {
         mobileMenu.classList.remove('open');
+        document.body.classList.remove('menu-open');
         burger.classList.remove('open');
         burger.setAttribute('aria-expanded', 'false');
         burger.setAttribute('aria-label', 'Open menu');
@@ -1605,6 +1723,7 @@
       burger.addEventListener('click', function () {
         var open = mobileMenu.classList.toggle('open');
         burger.classList.toggle('open', open);
+        document.body.classList.toggle('menu-open', open);
         burger.setAttribute('aria-expanded', String(open));
         burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
       });
@@ -1613,6 +1732,9 @@
       });
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && mobileMenu.classList.contains('open')) closeMenu();
+      });
+      window.matchMedia('(min-width: 1081px)').addEventListener('change', function (e) {
+        if (e.matches) closeMenu();
       });
 
       /* ---------- 4. ACTIVE NAV LINK HIGHLIGHT ---------- */
